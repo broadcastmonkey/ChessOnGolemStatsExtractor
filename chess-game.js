@@ -104,14 +104,14 @@ class ChessGame {
   };
   startNewGolemCalculation = async (move, playerType) => {
     const status = this.PerformMoveAndCheckForGameOver(move);
-    console.log("Status: " + status);
+   // console.log("Status: " + status);
     if (status === MoveStatus.GAME_CONTINUES) {
       this.stepId++;
       this.globalTurn =
         this.globalTurn === PlayerType.WHITE
           ? PlayerType.BLACK
           : PlayerType.WHITE;
-      console.log(this.gameType);
+     // console.log(this.gameType);
 
       if (this.gameType === GameType.PLAYER_VS_GOLEM)
         this.turnType =
@@ -121,7 +121,7 @@ class ChessGame {
         playerType === TurnType.GOLEM &&
         this.gameType === GameType.PLAYER_VS_GOLEM
       ) {
-        console.log("updating turn data ... ");
+        //console.log("updating turn data ... ");
         this.chessServer.currentTurn({
           gameId: this.gameId,
           stepId: this.stepId,
@@ -380,7 +380,7 @@ class ChessGame {
       isGameFinished: this.isGameFinished,
       gameType: this.gameType,
       gameStatus: this.gameStatus,
-      moves: this.moves,
+      moves: this.moves.map(x=>{x.dateString =this.getTimeString(x.time)}),
       winner: this.winner,
       winnerType: this.winnerType,
       turnType: this.turnType,
@@ -443,10 +443,10 @@ class ChessGame {
         return false;
       }
       let lastMove = this.moves[this.moves.length - 1];
-      if (lastMove && lastMove.calculated === true) {
-        console.log(
+if       (lastMove && lastMove.calculated === true) {
+       /* console.log(
           ` game : ${this.gameId} last step calculated, starting new step`
-        );
+        );*/
         this.turnId =
           lastMove.turnId === PlayerType.WHITE
             ? PlayerType.BLACK
@@ -462,7 +462,7 @@ class ChessGame {
             : PlayerType.WHITE;
         this.stepId = lastMove.stepId + 1;
       }
-      console.log(`game ${this.gameId} loaded from file.`);
+     // console.log(`game ${this.gameId} loaded from file.`);
     } else {
       console.log("file doesn't exist");
     }

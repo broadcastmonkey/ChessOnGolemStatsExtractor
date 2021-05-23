@@ -380,7 +380,7 @@ class ChessGame {
       isGameFinished: this.isGameFinished,
       gameType: this.gameType,
       gameStatus: this.gameStatus,
-      moves: this.moves.map(x=>{x.dateString =this.getTimeString(x.time)}),
+      moves: this.moves.map(x=>{ x.dateString =this.getTimeString(x.time);return x;}),
       winner: this.winner,
       winnerType: this.winnerType,
       turnType: this.turnType,

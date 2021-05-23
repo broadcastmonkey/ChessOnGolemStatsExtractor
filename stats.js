@@ -2,7 +2,7 @@
 const fs = require("fs");
 
 const ChessTempPathHelper = require("./helpers/chess-temp-path-helper");
-const { GameType } = require("./helpers/enums");
+const { GameType, PlayerType,TurnType } = require("./helpers/enums");
 const ChessGame = require("./chess-game");
 const Day = require("./day");
 class StatsManager {
@@ -76,8 +76,8 @@ class StatsManager {
       const { moves, gameType, gameStartedTimeString, ...game } = vals;
       game.movesCount = moves.length;
       game.moves = moves;
-      game.golemGame = gameType === GameType.GOLEM_VS_GOLEM ? 1 : 0;
-      game.playerGame = gameType === GameType.PLAYER_VS_GOLEM ? 1 : 0;
+      game.golemGames = gameType === GameType.GOLEM_VS_GOLEM ? 1 : 0;
+      game.playerGames = gameType === GameType.PLAYER_VS_GOLEM ? 1 : 0;
       game.gameStartedTimeString = gameStartedTimeString;
       games.push(game);
     });
@@ -95,13 +95,23 @@ class StatsManager {
    
       var day = this.getDay(x.gameStartedTimeString);
 
-      day.gamesCreated.total+=x.golemGames + x.playerGame;
-      day.gamesCreated.golem+=x.golemGames;
-      day.gamesCreated.human+=x.playerGame;
 
-      x.moves.forEach(move=>
+      day.gamesCreated.total+=x.golemGames + x.playerGames;
+      day.gamesCreated.golem+=x.golemGames;
+      day.gamesCreated.human+=x.playerGames;
+
+        x.moves.forEach(move=>
         {
-          var moveDate = this.getDay(x.gameStartedTimeString);
+          var moveDay = this.getDay(move.dateString);
+          moveDay.movesPerformed.total++;
+          if(move.playerType===TurnType.PLAYER)
+              moveDay.movesPerformed.human++;
+          else   {
+              moveDay.movesPerformed.golem++;
+              moveDay.golemCalculationTimes.push(move.total_time/1000);
+            
+              if(move.cost>0){moveDay.golemCosts.push(parseFloat(move.cost));}
+          }
         })
       //moves performed
 
@@ -110,5 +120,33 @@ class StatsManager {
     console.log("total golem games: " + golemGames);
     console.log("total player games: " + playerGames);
   };
+  getLineForStatsObject(date,data)
+  {
+    return `${date},${data.golem},${data.human},${data.total}\n`;
+  }
+  getMovesCountStats = () =>
+  {
+      var lines="";
+      this.days.forEach(day=>lines+=this.getLineForStatsObject(day.dateString,day.movesPerformed));
+      return lines;
+  }
+  getGamesCreatedStats = () =>
+  {
+      var lines="";
+      this.days.forEach(day=>lines+=this.getLineForStatsObject(day.dateString,day.gamesCreated));
+      return lines;
+  }
+  getGolemTimeStats = ()=>
+  {
+    var lines="";
+    this.days.forEach(day=>lines+=day.getAvgMinMaxRounded(day.golemCalculationTimes));
+    return lines;
+  }
+  getGolemCostsStats = ()=>
+  {
+    var lines="";
+    this.days.forEach(day=>lines+=day.getAvgMinMax(day.golemCosts));
+    return lines;
+  }
 }
 module.exports = StatsManager;
